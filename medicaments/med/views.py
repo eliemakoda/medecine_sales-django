@@ -81,12 +81,12 @@ def Index(request):
     #         request.session['email'] = user.email
     #         request.session['password'] = user.password
     #         request.session['avatar'] = user.avatar.url
-    buyes = Buys.objects.filter(product__medecine_name="Nom du médicament").order_by('date')
+    buyes = Buys.objects.all().order_by('date')
     dates = [buy.date for buy in buyes]
     quantities = [buy.quantity for buy in buyes]
     
     
-    sales_data = Sales.objects.filter(product__medecine_name="Nom du médicament").values('date').annotate(total_quantity=Sum('quantity')).order_by('date')
+    sales_data = Sales.objects.all().values('date').annotate(total_quantity=Sum('quantity')).order_by('date')
     datess = [data['date'] for data in sales_data]
     quantitiess = [data['total_quantity'] for data in sales_data]
     userDetails={"username":request.session.get('username'),"pk":request.session.get("id"), "email": request.session.get('email'), "avatar": request.session.get("avatar") , "password": request.session.get("password") }
@@ -98,10 +98,15 @@ def Index(request):
     medecine_names = [medecine.medecine_name for medecine in expiring_medecines]
     expire_dates = [medecine.expire_date.strftime('%Y-%m-%d') for medecine in expiring_medecines]
 
-    
+    liste= []
+    for i in range(len(datess)):
+        liste.append({"y":quantitiess[i], "label":datess[i]})
     return render(request, "index.html", context={  'medecine_names': medecine_names,
         'expire_dates': expire_dates,"datess":datess, "quantitiess":quantitiess, "log":userDetails,  'dates': dates,
-        'quantities': quantities,"log":userDetails,"totExp":total_expense,"allbuy":allBuysAmount,"allsales":allSalesAmount,"labels":labels,"values":values,"meds":CriticalStock, "expmeds":medlist, "topsales": top_selling_products, "top":top_selling_product})
+        'quantities': quantities,"log":userDetails,"totExp":total_expense,"allbuy":allBuysAmount,"allsales":allSalesAmount,"labels":labels,"values":values,"meds":CriticalStock, 
+        "expmeds":medlist, "topsales": top_selling_products, "top":top_selling_product,
+        "datapoints":liste
+        })
 
 
 def addBuy(request):
